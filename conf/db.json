@@ -1,0 +1,6 @@
+{
+    "host": "localhost",
+    "username": "postgres",
+    "database": "emspace",
+    "port": "5432"
+}
