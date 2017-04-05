@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+
+	"io/ioutil"
 
 	"github.com/revel/revel"
 	"golang.org/x/oauth2"
@@ -32,7 +35,22 @@ func (c Auth) Index(code string) revel.Result {
 
 func (c Auth) Callback(code string) revel.Result {
 	tok, err := oauthCfg.Exchange(oauth2.NoContext, code)
-	fmt.Println(tok)
+	client := &http.Client{}
+	basicURL :=
+		"https://api.linkedin.com/v1/people/" +
+			"~:(id,num-connections,picture-url,specialties,industry,headline,positions,email-address)?format=json&oauth2_access_token=%s"
+	requestURL := fmt.Sprintf(basicURL, tok.AccessToken)
+	fmt.Println(requestURL)
+	req, err := http.NewRequest("GET", requestURL, nil)
+	//tok.SetAuthHeader(req)
+	resp, err := client.Do(req)
+	fmt.Println(tok.AccessToken)
+	fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXx")
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 	fmt.Println(err)
+	cookie := http.Cookie{Name: "accessToken", Value: tok.AccessToken}
+	c.SetCookie(&cookie)
 	return c.Redirect("/")
 }
